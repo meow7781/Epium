@@ -49,10 +49,32 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const { isDark, isAuthenticated, hasOnboarded, user } = useAppStore();
+  const { themeMode, isAuthenticated, hasOnboarded, user } = useAppStore();
   const segments = useSegments();
   const router = useRouter();
   const [isAppReady, setIsAppReady] = useState(false);
+
+  const PinkTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: COLORS.pinkPrimary,
+      background: COLORS.pinkBg,
+      card: COLORS.pinkCard,
+      text: COLORS.pinkMuted,
+      border: COLORS.pinkBorder,
+      notification: COLORS.pinkPrimary,
+    },
+  };
+
+  const getTheme = () => {
+    switch (themeMode) {
+      case 'dark': return DarkTheme;
+      case 'pink': return PinkTheme;
+      case 'light': return DefaultTheme;
+      default: return DarkTheme;
+    }
+  };
 
   useEffect(() => {
     if (!segments[0] && !isAuthenticated) {
@@ -87,7 +109,7 @@ function RootLayoutNav() {
   }, [isAuthenticated, hasOnboarded, segments]);
 
   return (
-    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={getTheme()}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" options={{ animation: 'fade' }} />
         <Stack.Screen name="auth/index" options={{ animation: 'fade' }} />

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Image, Pressable, Dimensions, Platform, Share, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, ScrollView, Image, Pressable, Dimensions, Platform, Share, Alert, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Text } from '../../components/Themed';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS, SHADOW } from '../../constants/theme';
@@ -7,7 +7,7 @@ import { MOCK_PRODUCTS } from '../../constants/mockData';
 import { useAppStore } from '../../store/appStore';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown, FadeInRight, SlideInRight } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInRight, SlideInRight, FadeInUp, FadeOut } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,7 +24,20 @@ export default function ProductDetailScreen() {
   const product = MOCK_PRODUCTS.find(p => p.id === id) || MOCK_PRODUCTS[0];
   const [selectedSize, setSelectedSize] = useState('M');
   const [selectedColor, setSelectedColor] = useState('Grey');
-  const { isDark, addToCart } = useAppStore();
+  const { isDark, addToCart, wishlist, toggleWishlist } = useAppStore();
+  const isWishlisted = wishlist.includes(id as string);
+  const lastTap = useRef(0);
+  const [showHeart, setShowHeart] = useState(false);
+
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      if (!isWishlisted) toggleWishlist(id as string);
+      setShowHeart(true);
+      setTimeout(() => setShowHeart(false), 800);
+    }
+    lastTap.current = now;
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#0D0B0A' : '#F8F9FA' }]}>
@@ -44,7 +57,18 @@ export default function ProductDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Product Image */}
         <Animated.View entering={FadeInDown.duration(800)} style={styles.imageContainer}>
-          <Image source={{ uri: product.images[0] }} style={styles.mainImage} />
+          <Pressable 
+            delayLongPress={200}
+            onLongPress={handleDoubleTap}
+            onPress={() => {}} // dummy to allow double tap logic if needed
+          >
+            <Image source={{ uri: product.images[0] }} style={styles.mainImage} />
+            {showHeart && (
+              <Animated.View entering={FadeInUp} exiting={FadeOut} style={styles.overlayHeart}>
+                <Ionicons name="heart" size={100} color="#FF453A" />
+              </Animated.View>
+            )}
+          </Pressable>
           
           {/* AR & 360 Overlay Button */}
           <Pressable style={styles.arOverlayBtn}>
@@ -57,8 +81,15 @@ export default function ProductDetailScreen() {
             </LinearGradient>
           </Pressable>
 
-          <Pressable style={[styles.wishlistBtn, { backgroundColor: isDark ? '#1A1614' : '#FFF' }]}>
-            <Ionicons name="heart-outline" size={24} color={isDark ? '#FFF' : '#111'} />
+          <Pressable 
+            style={[styles.wishlistBtn, { backgroundColor: isDark ? '#1A1614' : '#FFF' }]}
+            onPress={() => toggleWishlist(id as string)}
+          >
+            <Ionicons 
+              name={isWishlisted ? "heart" : "heart-outline"} 
+              size={24} 
+              color={isWishlisted ? "#FF453A" : (isDark ? '#FFF' : '#111')} 
+            />
           </Pressable>
         </Animated.View>
 
@@ -104,7 +135,7 @@ export default function ProductDetailScreen() {
           </View>
 
           <Text style={styles.description}>
-            This premium collection piece from {product.location} represents the pinnacle of Epium craftsmanship. Every detail is meticulously handled by master artisans.
+            This premium collection piece from {product.location} represents the pinnacle of EpiUm craftsmanship. Every detail is meticulously handled by master artisans.
           </Text>
         </View>
       </ScrollView>
@@ -355,5 +386,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF453A',
     borderWidth: 2,
     borderColor: '#FFF',
-  }
+  },
+  overlayHeart: {
+    position: 'absolute',
+    top: '35%',
+    left: '35%',
+    zIndex: 100,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
+  },
 });

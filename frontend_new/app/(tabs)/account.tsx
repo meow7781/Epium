@@ -11,7 +11,27 @@ const { width } = Dimensions.get('window');
 
 export default function AccountScreen() {
   const router = useRouter();
-  const { user, logout, isDark } = useAppStore();
+  const { user, logout, themeMode } = useAppStore();
+  const isDark = themeMode === 'dark';
+  const isPink = themeMode === 'pink';
+
+  const getBackgroundColor = () => {
+    if (isDark) return '#0D0B0A';
+    if (isPink) return COLORS.pinkBg;
+    return '#F8F9FA';
+  };
+
+  const getHeaderColor = () => {
+    if (isDark) return '#060606';
+    if (isPink) return COLORS.pinkCard;
+    return '#FFF';
+  };
+
+  const getTextColor = () => {
+    if (isDark) return '#FFF';
+    if (isPink) return COLORS.pinkMuted;
+    return '#111';
+  };
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to exit your luxury session?', [
@@ -27,50 +47,50 @@ export default function AccountScreen() {
     <Pressable 
       style={({ pressed }) => [
         styles.optionRow, 
-        { borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8F9FA' },
-        pressed && { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }
+        { borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : (isPink ? COLORS.pinkBorder : '#F8F9FA') },
+        pressed && { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : (isPink ? 'rgba(255,105,180,0.05)' : 'rgba(0,0,0,0.02)') }
       ]} 
       onPress={onPress}
     >
       <View style={[
         styles.optionIcon, 
-        { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8F9FA' },
+        { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : (isPink ? 'rgba(255,105,180,0.1)' : '#F8F9FA') },
         isDestructive && { backgroundColor: 'rgba(255, 69, 58, 0.1)' }
       ]}>
-        <Ionicons name={icon} size={20} color={isDestructive ? '#FF453A' : (isDark ? '#FFF' : '#111')} />
+        <Ionicons name={icon} size={20} color={isDestructive ? '#FF453A' : (isDark ? '#FFF' : (isPink ? COLORS.pinkPrimary : '#111'))} />
       </View>
       <View style={styles.optionContent}>
-        <Text style={[styles.optionTitle, { color: isDark ? '#FFF' : '#111' }, isDestructive && { color: '#FF453A' }]}>{title}</Text>
-        {subtitle && <Text style={styles.optionSubtitle}>{subtitle}</Text>}
+        <Text style={[styles.optionTitle, { color: getTextColor() }, isDestructive && { color: '#FF453A' }]}>{title}</Text>
+        {subtitle && <Text style={[styles.optionSubtitle, isPink && { color: COLORS.pinkMuted }]}>{subtitle}</Text>}
       </View>
-      <Ionicons name="chevron-forward" size={18} color={isDark ? '#444' : '#CCC'} />
+      <Ionicons name="chevron-forward" size={18} color={isDark ? '#444' : (isPink ? COLORS.pinkPrimary : '#CCC')} />
     </Pressable>
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#0D0B0A' : '#F8F9FA' }]}>
+    <View style={[styles.container, { backgroundColor: getBackgroundColor() }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
-      <View style={[styles.header, { backgroundColor: isDark ? '#060606' : '#FFF' }]}>
+      <View style={[styles.header, { backgroundColor: getHeaderColor() }]}>
         <View style={styles.topRow}>
-          <Pressable style={[styles.headerBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={24} color={isDark ? '#FFF' : '#111'} />
+          <Pressable style={[styles.headerBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : (isPink ? 'rgba(255,105,180,0.1)' : '#F8F9FA') }]} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={24} color={getTextColor()} />
           </Pressable>
-          <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#111' }]}>Profile</Text>
-          <Pressable style={[styles.headerBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]} onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color={isDark ? '#FFF' : '#111'} />
+          <Text style={[styles.headerTitle, { color: getTextColor() }]}>Profile</Text>
+          <Pressable style={[styles.headerBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : (isPink ? 'rgba(255,105,180,0.1)' : '#F8F9FA') }]} onPress={() => router.push('/settings')}>
+            <Ionicons name="settings-outline" size={24} color={getTextColor()} />
           </Pressable>
         </View>
 
         {/* Profile Card - Minimalist Style */}
-        <Animated.View entering={FadeInDown.duration(800)} style={[styles.profileCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]}>
+        <Animated.View entering={FadeInDown.duration(800)} style={[styles.profileCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : (isPink ? 'rgba(255,105,180,0.05)' : '#F8F9FA') }]}>
           <Image 
             source={{ uri: user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200' }} 
             style={styles.avatar} 
           />
           <View style={styles.profileInfo}>
-            <Text style={[styles.nameText, { color: isDark ? '#FFF' : '#111' }]}>{user?.name || 'Gaurav Paul'}</Text>
-            <Text style={styles.emailText}>{user?.email || 'heritage@epium.com'}</Text>
+            <Text style={[styles.nameText, { color: getTextColor() }]}>{user?.name || 'Gaurav Paul'}</Text>
+            <Text style={[styles.emailText, isPink && { color: COLORS.pinkMuted }]}>{user?.email || 'heritage@epium.com'}</Text>
           </View>
           <Pressable 
             style={({ pressed }) => [styles.editBtn, pressed && { opacity: 0.8 }]}
@@ -85,24 +105,24 @@ export default function AccountScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Personal Hub</Text>
-          <View style={[styles.cardContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFF' }]}>
+          <View style={[styles.cardContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : (isPink ? COLORS.pinkCard : '#FFF') }]}>
             {renderOption('bag-handle-outline', 'Order History', 'Track your recent masterpieces', () => router.push('/orders'))}
             {renderOption('heart-outline', 'My Wishlist', '12 items saved for later', () => router.push('/wishlist'))}
             {renderOption('location-outline', 'Shipping Addresses', 'Varanasi, Uttar Pradesh', () => router.push('/addresses'))}
-            {renderOption('card-outline', 'Payment Vault', 'Managed via Secure Epium Gateway', () => router.push('/settings'))}
+            {renderOption('card-outline', 'Payment Vault', 'Managed via Secure EpiUm Gateway', () => router.push('/settings'))}
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Admin & More</Text>
-          <View style={[styles.cardContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFF' }]}>
+          <View style={[styles.cardContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : (isPink ? COLORS.pinkCard : '#FFF') }]}>
             {user?.role === 'admin' && renderOption('shield-checkmark-outline', 'Admin Console', 'System management', () => router.push('/admin'))}
             {renderOption('help-circle-outline', 'Customer Concierge')}
             {renderOption('log-out-outline', 'Sign Out', undefined, handleLogout, true)}
           </View>
         </View>
         
-        <Text style={styles.versionText}>Epium Luxury Edition v1.0.4</Text>
+        <Text style={styles.versionText}>EpiUm Luxury Edition v1.0.4</Text>
       </ScrollView>
     </View>
   );

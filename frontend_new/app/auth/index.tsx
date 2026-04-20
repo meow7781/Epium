@@ -162,20 +162,21 @@ export default function AuthScreen() {
 
           <Pressable 
             style={({ pressed }) => [styles.socialButton, pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }]}
-            onLongPress={() => {
-              Alert.alert("Admin Access", "Bypassing Firebase for Developer Build.");
-              handleGuest(); // Or a specific admin setter
-            }}
+            onPress={() => Alert.alert("Authentication", "Continuing with Google secure vault...")}
           >
             <Ionicons name="logo-google" size={20} color={COLORS.textWhite} />
-            <Text style={styles.socialButtonText}>Google (Long Press for Dev)</Text>
+            <Text style={styles.socialButtonText}>Continue with Google</Text>
           </Pressable>
-          <Text style={styles.firebaseNote}>* Native Google Auth requires npx expo prebuild</Text>
 
-          <Pressable style={styles.guestContainer} onPress={handleGuest}>
-            <Text style={styles.guestText}>Browse as Guest</Text>
-            <Ionicons name="arrow-forward" size={16} color={COLORS.accent} />
+          <Pressable 
+            style={({ pressed }) => [styles.guestButton, pressed && { opacity: 0.8 }]} 
+            onPress={handleGuest}
+          >
+            <Text style={styles.guestButtonText}>Explore as Guest</Text>
+            <Ionicons name="eye-outline" size={18} color={COLORS.accent} style={{ marginLeft: 8 }} />
           </Pressable>
+
+          <Text style={styles.firebaseNote}>* Native Google Auth requires npx expo prebuild</Text>
         </Animated.View>
       </KeyboardAvoidingView>
     </View>
@@ -314,17 +315,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: SPACING.sm,
   },
-  guestContainer: {
+  guestButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: SPACING.xl,
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.accent,
   },
-  guestText: {
+  guestButtonText: {
     color: COLORS.accent,
     fontSize: TYPOGRAPHY.base,
-    fontWeight: '600',
-    marginRight: SPACING.xs,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
   firebaseNote: {
     textAlign: 'center',

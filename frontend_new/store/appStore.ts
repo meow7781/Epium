@@ -67,6 +67,8 @@ export interface Address {
 
 interface AppState {
   // Theme
+  themeMode: 'dark' | 'light' | 'pink';
+  setThemeMode: (mode: 'dark' | 'light' | 'pink') => void;
   isDark: boolean;
   toggleTheme: () => void;
 
@@ -95,8 +97,12 @@ interface AppState {
   setHasOnboarded: (val: boolean) => void;
   preferences: {
     category?: string;
-    style?: string;
+    style?: string | string[];
     region?: string;
+    age?: string;
+    birthday?: string;
+    lovesAnime?: boolean | null;
+    vibe?: string;
   };
   setPreferences: (prefs: Partial<AppState['preferences']>) => void;
 
@@ -107,8 +113,13 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set, get) => ({
   // Theme
+  themeMode: 'dark',
+  setThemeMode: (mode) => set({ themeMode: mode, isDark: mode === 'dark' }),
   isDark: true,
-  toggleTheme: () => set((s) => ({ isDark: !s.isDark })),
+  toggleTheme: () => set((s) => {
+    const nextMode = s.themeMode === 'dark' ? 'light' : 'dark';
+    return { themeMode: nextMode, isDark: nextMode === 'dark' };
+  }),
 
   // Auth
   user: null,

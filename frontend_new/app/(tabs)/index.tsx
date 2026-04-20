@@ -7,7 +7,7 @@ import { MOCK_PRODUCTS } from '../../constants/mockData';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import Animated, { FadeInDown, FadeInUp, LinearTransition } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp, FadeInRight, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,9 +27,64 @@ const CAROUSEL_ITEMS = [
   { title: 'Modern Indian Luxury', image: 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=1200', tag: 'EPITOME' },
 ];
 
+const ProductCard = ({ item, index, isDark, wishlist, toggleWishlist, router }: any) => {
+  const isWishlisted = wishlist.includes(item.id);
+  const lastTap = useRef(0);
+  const [showHeart, setShowHeart] = useState(false);
+
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      if (!isWishlisted) toggleWishlist(item.id);
+      setShowHeart(true);
+      setTimeout(() => setShowHeart(false), 800);
+    }
+    lastTap.current = now;
+  };
+
+  return (
+    <Animated.View 
+      entering={FadeInDown.delay(index * 100).duration(600)}
+      style={[styles.productCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#FFF' }]}
+    >
+      <Pressable 
+        onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.id } })}
+        delayLongPress={200}
+        onLongPress={handleDoubleTap}
+      >
+        <Image source={{ uri: item.images[0] }} style={styles.productImg} />
+        
+        {showHeart && (
+          <Animated.View entering={FadeInUp} exiting={FadeOut} style={styles.overlayHeart}>
+            <Ionicons name="heart" size={60} color="#FF453A" />
+          </Animated.View>
+        )}
+        <Pressable 
+          style={styles.heartBtn} 
+          onPress={() => toggleWishlist(item.id)}
+        >
+          <Ionicons 
+            name={isWishlisted ? "heart" : "heart-outline"} 
+            size={16} 
+            color={isWishlisted ? "#FF453A" : "#111"} 
+          />
+        </Pressable>
+        <View style={styles.ratingBadge}>
+          <Ionicons name="star" size={10} color="#FFD700" />
+          <Text style={styles.ratingText}>4.9</Text>
+        </View>
+        <View style={styles.productInfo}>
+          <Text style={[styles.productTitle, { color: isDark ? '#FFF' : '#111' }]} numberOfLines={1}>{item.title}</Text>
+          <Text style={[styles.productPrice, { color: isDark ? '#E8651A' : '#111' }]}>₹{item.price.toLocaleString()}</Text>
+        </View>
+      </Pressable>
+    </Animated.View>
+  );
+};
+
 export default function HomeScreen() {
   const router = useRouter();
-  const { isDark, user, activeCategory, setActiveCategory } = useAppStore();
+  const { isDark, user, activeCategory, setActiveCategory, wishlist, toggleWishlist } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -40,7 +95,7 @@ export default function HomeScreen() {
       if (!isSearching) {
         const nextIndex = (carouselIndex + 1) % CAROUSEL_ITEMS.length;
         carouselRef.current?.scrollTo({ 
-          x: nextIndex * (width - 40), 
+          x: nextIndex * (width - 24), 
           animated: true 
         });
         setCarouselIndex(nextIndex);
@@ -106,11 +161,13 @@ export default function HomeScreen() {
             <ScrollView 
               ref={carouselRef}
               horizontal 
-              pagingEnabled 
               showsHorizontalScrollIndicator={false}
+              snapToInterval={width - 24} // Slide width + margin
+              decelerationRate="fast"
+              snapToAlignment="start"
               onScroll={(e) => {
-                const index = Math.round(e.nativeEvent.contentOffset.x / (width - 40));
-                setCarouselIndex(index);
+                const index = Math.round(e.nativeEvent.contentOffset.x / (width - 24));
+                if (index !== carouselIndex) setCarouselIndex(index);
               }}
               scrollEventThrottle={16}
             >
@@ -177,39 +234,26 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderProduct = ({ item, index }: { item: any, index: number }) => (
-    <Animated.View 
-      entering={FadeInDown.delay(index * 100).duration(600)}
-      style={[styles.productCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#FFF' }]}
-    >
-      <Pressable onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.id } })}>
-        <Image source={{ uri: item.images[0] }} style={styles.productImg} />
-        <Pressable style={styles.heartBtn}>
-          <Ionicons name="heart-outline" size={16} color="#111" />
-        </Pressable>
-        <View style={styles.ratingBadge}>
-          <Ionicons name="star" size={10} color="#FFD700" />
-          <Text style={styles.ratingText}>4.9</Text>
-        </View>
-        <View style={styles.productInfo}>
-          <Text style={[styles.productTitle, { color: isDark ? '#FFF' : '#111' }]} numberOfLines={1}>{item.title}</Text>
-          <Text style={[styles.productPrice, { color: isDark ? '#E8651A' : '#111' }]}>₹{item.price.toLocaleString()}</Text>
-        </View>
-      </Pressable>
-    </Animated.View>
-  );
-
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#0D0B0A' : '#F8F9FA' }]}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <FlatList
         data={MOCK_PRODUCTS.filter(p => {
-          const matchesCategory = activeCategory === 'All' ? true : p.category === activeCategory;
+          const matchesCategory = activeCategory === 'all' || activeCategory === 'All' ? true : p.category === activeCategory;
           const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                               p.location.toLowerCase().includes(searchQuery.toLowerCase());
           return matchesCategory && matchesSearch;
         })}
-        renderItem={renderProduct}
+        renderItem={({ item, index }) => (
+          <ProductCard 
+            item={item} 
+            index={index} 
+            isDark={isDark} 
+            wishlist={wishlist} 
+            toggleWishlist={toggleWishlist} 
+            router={router} 
+          />
+        )}
         keyExtractor={(item) => item.id}
         numColumns={2}
         ListHeaderComponent={renderHeader}
@@ -347,11 +391,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   carouselSlide: {
-    width: width - 40,
+    width: width - 48,
     height: 200,
     borderRadius: 30,
     overflow: 'hidden',
-    marginRight: 20,
+    marginRight: 24,
   },
   carouselImg: {
     width: '100%',
@@ -455,7 +499,7 @@ const styles = StyleSheet.create({
   bannerContainer: {
     width: '100%',
     height: 180,
-    borderRadius: RADIUS.xxl,
+    borderRadius: RADIUS['2xl'],
     overflow: 'hidden',
     marginBottom: 30,
   },
@@ -558,5 +602,14 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#111',
     marginTop: 4,
+  },
+  overlayHeart: {
+    position: 'absolute',
+    top: '35%',
+    left: '35%',
+    zIndex: 100,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
   },
 });

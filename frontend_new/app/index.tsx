@@ -1,79 +1,156 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Pressable, Image, Platform } from 'react-native';
 import { Text } from '../components/Themed';
-import { COLORS, TYPOGRAPHY, SPACING, RADIUS, SHADOW } from '../constants/theme';
+import { COLORS, TYPOGRAPHY, SPACING, RADIUS } from '../constants/theme';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown, SlideInUp } from 'react-native-reanimated';
+import Animated, { 
+  FadeIn, 
+  FadeInDown,
+  FadeInUp,
+  FadeInLeft,
+  FadeInRight,
+  useSharedValue, 
+  useAnimatedStyle, 
+  withRepeat, 
+  withTiming, 
+  withDelay,
+  Easing,
+} from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
+
+const SCRAPBOOK_IMAGES = [
+  'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
+  'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=800',
+  'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=800',
+  'https://images.unsplash.com/photo-1590736704728-f4730bb30770?w=800',
+  'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=800',
+  'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800',
+  'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800',
+  'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=800',
+  'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800',
+  'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800',
+];
+
+const FloatingPiece = ({ uri, delay, style, direction }: any) => {
+  const translateY = useSharedValue(0);
+  const rotate = useSharedValue(style.rotate || 0);
+
+  useEffect(() => {
+    translateY.value = withDelay(
+      delay + 1000, // Wait for entry animation to finish
+      withRepeat(
+        withTiming(-20, { duration: 4000 + (delay % 1000), easing: Easing.inOut(Easing.sin) }),
+        -1,
+        true
+      )
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: translateY.value },
+      { rotate: `${rotate.value}deg` }
+    ],
+  }));
+
+  const getEntryAnim = () => {
+    switch(direction) {
+      case 'top': return FadeInUp.delay(delay).duration(1500).springify();
+      case 'bottom': return FadeInDown.delay(delay).duration(1500).springify();
+      case 'left': return FadeInLeft.delay(delay).duration(1500).springify();
+      case 'right': return FadeInRight.delay(delay).duration(1500).springify();
+      default: return FadeIn.delay(delay).duration(1500);
+    }
+  };
+
+  return (
+    <Animated.View style={[styles.pieceContainer, style, animatedStyle]} entering={getEntryAnim()}>
+      <Image source={{ uri }} style={styles.pieceImage} />
+    </Animated.View>
+  );
+};
 
 export default function LandingPage() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      {/* Background Heritage Pattern or Image */}
-      <Image 
-        source={{ uri: 'https://images.unsplash.com/photo-1590424744295-ff46e01a0678?w=800' }} // Intricate Indian loom
-        style={StyleSheet.absoluteFillObject}
-        resizeMode="cover"
-      />
+      {/* Background with subtle grain or color */}
+      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: '#0D0B0A' }]} />
       
+      {/* Scrapbook Pieces Layout - 10 pieces with different entry directions */}
+      <View style={styles.scrapbookLayer}>
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[0]} direction="left" delay={0}
+          style={{ top: '5%', left: -30, width: width * 0.45, height: height * 0.25, rotate: -8 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[1]} direction="right" delay={300}
+          style={{ top: '2%', right: -40, width: width * 0.4, height: height * 0.22, rotate: 12 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[2]} direction="top" delay={600}
+          style={{ top: '25%', left: '10%', width: width * 0.5, height: height * 0.28, rotate: 5, zIndex: 1 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[3]} direction="bottom" delay={900}
+          style={{ top: '22%', right: '5%', width: width * 0.35, height: height * 0.2, rotate: -15 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[4]} direction="left" delay={1200}
+          style={{ top: '45%', left: -20, width: width * 0.55, height: height * 0.3, rotate: -4 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[5]} direction="right" delay={1500}
+          style={{ top: '48%', right: -15, width: width * 0.45, height: height * 0.25, rotate: 7 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[6]} direction="bottom" delay={1800}
+          style={{ bottom: '25%', left: '15%', width: width * 0.4, height: height * 0.22, rotate: 9, zIndex: 2 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[7]} direction="top" delay={2100}
+          style={{ bottom: '15%', right: '10%', width: width * 0.5, height: height * 0.28, rotate: -10 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[8]} direction="left" delay={2400}
+          style={{ bottom: '5%', left: -30, width: width * 0.45, height: height * 0.25, rotate: -12 }} 
+        />
+        <FloatingPiece 
+          uri={SCRAPBOOK_IMAGES[9]} direction="right" delay={2700}
+          style={{ bottom: '2%', right: -35, width: width * 0.4, height: height * 0.22, rotate: 6 }} 
+        />
+      </View>
+
       <LinearGradient
-        colors={['rgba(13,11,10,0.2)', 'rgba(13,11,10,0.7)', '#0D0B0A']}
+        colors={['transparent', 'rgba(13,11,10,0.6)', '#0D0B0A']}
         style={StyleSheet.absoluteFillObject}
+        locations={[0, 0.4, 0.8]}
       />
+
+      {/* Top Navigation Bar */}
+      <View style={styles.header}>
+        <Animated.View entering={FadeIn.delay(3000)}>
+          <Text style={styles.logoText}>EpiUm</Text>
+        </Animated.View>
+      </View>
 
       <View style={styles.content}>
-        <Animated.View entering={SlideInUp.duration(1000).springify()} style={styles.logoContainer}>
-          <Text style={styles.logoText}>Epium</Text>
-          <View style={styles.logoUnderline} />
+        <Animated.View entering={FadeInDown.delay(3500).duration(1000)} style={styles.mainHeadline}>
+          <Text style={styles.tagline}>TRADITION REDEFINED</Text>
+          <Text style={styles.heroTitle}>Wear the {'\n'}Heritage.</Text>
         </Animated.View>
 
-        <View style={styles.midSection}>
-          <Animated.View entering={FadeInDown.delay(400).duration(800)}>
-            <Text style={styles.headline}>The Soul of{'\n'}Indian Heritage.</Text>
-            <Text style={styles.subheadline}>
-              Experience the breath of every thread. Direct from master weavers to your doorstep.
-            </Text>
-          </Animated.View>
-
-          <Animated.View entering={FadeInDown.delay(600).duration(800)} style={styles.features}>
-            <View style={styles.featureItem}>
-              <View style={styles.featureBullet} />
-              <Text style={styles.featureText}>Artisan Stories with AR/360° View</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <View style={styles.featureBullet} />
-              <Text style={styles.featureText}>Traceable GI Certified Crafts</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <View style={styles.featureBullet} />
-              <Text style={styles.featureText}>Direct Impact: 80% to Artisans</Text>
-            </View>
-          </Animated.View>
-        </View>
-
-        <Animated.View entering={FadeInDown.delay(800).duration(800)} style={styles.footer}>
+        <Animated.View entering={FadeInDown.delay(4000).duration(1000)} style={styles.footer}>
           <Pressable 
-            style={({ pressed }) => [styles.exploreBtn, pressed && { opacity: 0.9 }]}
-            onPress={() => router.push('/auth')}
+            style={({ pressed }) => [styles.shopBtn, pressed && { opacity: 0.8 }]}
+            onPress={() => router.push('/auth/onboarding')}
           >
-            <LinearGradient
-              colors={COLORS.gradientPrimary}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.btnGradient}
-            >
-              <Text style={styles.exploreText}>Start Journey</Text>
-              <Ionicons name="arrow-forward" size={18} color="#FFF" style={{ marginLeft: 6 }} />
-            </LinearGradient>
-          </Pressable>
-          
-          <Pressable style={styles.secondaryBtn} onPress={() => router.push('/(tabs)')}>
-            <Text style={styles.secondaryText}>Explore Collections</Text>
+            <Text style={styles.shopBtnText}>ENTER THE STORE</Text>
+            <Ionicons name="arrow-forward" size={18} color="#000" style={{ marginLeft: 10 }} />
           </Pressable>
         </Animated.View>
       </View>
@@ -84,95 +161,83 @@ export default function LandingPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#0D0B0A',
+  },
+  scrapbookLayer: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  pieceContainer: {
+    position: 'absolute',
+    borderRadius: 4,
+    overflow: 'hidden',
+    backgroundColor: '#1A1614',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  pieceImage: {
+    width: '100%',
+    height: '100%',
+    opacity: 0.9,
+  },
+  header: {
+    paddingHorizontal: 30,
+    paddingTop: Platform.OS === 'ios' ? 70 : 50,
+    zIndex: 100,
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: 32,
+    fontWeight: '300',
+    color: '#FFF',
+    fontFamily: Platform.OS === 'ios' ? 'Times New Roman' : 'serif',
+    fontStyle: 'italic',
+    letterSpacing: 4,
   },
   content: {
     flex: 1,
     paddingHorizontal: 40,
-    justifyContent: 'space-between',
-    paddingTop: 100,
-    paddingBottom: 60,
+    justifyContent: 'flex-end',
+    paddingBottom: 80,
+    zIndex: 101,
   },
-  logoContainer: {
-    alignItems: 'center',
+  mainHeadline: {
+    marginBottom: 40,
   },
-  logoText: {
+  tagline: {
+    color: COLORS.accent,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 4,
+    marginBottom: 10,
+  },
+  heroTitle: {
     fontSize: 48,
-    fontWeight: '800',
+    fontWeight: '300',
     color: '#FFF',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    letterSpacing: 2,
-  },
-  logoUnderline: {
-    width: 60,
-    height: 3,
-    backgroundColor: COLORS.primary,
-    marginTop: 8,
-  },
-  midSection: {
-    marginTop: -40,
-  },
-  headline: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: '#FFF',
-    fontFamily: 'serif',
-    lineHeight: 48,
-  },
-  subheadline: {
-    fontSize: 18,
-    color: COLORS.accentLight,
-    marginTop: 20,
-    lineHeight: 28,
-    fontWeight: '500',
-  },
-  features: {
-    marginTop: 40,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  featureBullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.primary,
-    marginRight: 10,
-  },
-  featureText: {
-    color: COLORS.darkMuted,
-    fontSize: 15,
-    fontWeight: '600',
+    lineHeight: 56,
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Light' : 'sans-serif-light',
   },
   footer: {
-    gap: 16,
+    width: '100%',
   },
-  exploreBtn: {
-    height: 56,
-    borderRadius: RADIUS.full,
-    overflow: 'hidden',
-    ...SHADOW.primary,
-  },
-  btnGradient: {
-    flex: 1,
+  shopBtn: {
+    backgroundColor: '#FFF',
+    height: 64,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-  exploreText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  secondaryBtn: {
-    paddingVertical: 12,
     alignItems: 'center',
+    borderRadius: 2, 
   },
-  secondaryText: {
-    color: COLORS.darkMuted,
-    fontSize: 16,
-    fontWeight: '600',
+  shopBtnText: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 2,
   },
 });

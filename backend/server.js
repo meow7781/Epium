@@ -11,40 +11,68 @@ app.use(express.json());
 const products = [
   {
     id: '1',
-    title: 'Woven Jamdani Scarf',
+    title: 'Emerald Banarasi Silk Saree',
     artisan: 'Priya Das',
-    location: 'Phulia, West Bengal',
-    image: 'https://images.unsplash.com/photo-1584988771970-d26b01b69106?q=80&w=2942&auto=format&fit=crop',
-    price: '$45',
-    story: 'Priya has been hand-weaving pure cotton threads for over 20 years. Every Jamdani scarf takes weeks to complete and supports her entire community.',
-    details: '100% Pure Muslin Cotton. Hand-spun and naturally dyed.',
+    location: 'Varanasi, Uttar Pradesh',
+    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200',
+    price: '$450',
+    story: 'Priya has been hand-weaving pure silk for over 20 years. This Emerald piece uses real gold zari threads.',
+    details: 'Pure Katan Silk with Gold Zari. Dry clean only.',
     video: 'https://cdn.pixabay.com/video/2019/04/18/22818-331006509_large.mp4', 
+    category: 'Saree'
   },
   {
     id: '2',
-    title: 'Terracotta Clay Pot',
+    title: 'Heritage Woolen Overcoat',
     artisan: 'Ram Kumhar',
-    location: 'Bishnupur, West Bengal',
-    image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=2940&auto=format&fit=crop',
-    price: '$85',
-    story: 'Created with clay from the banks of the local river, Ram sculpts these pots by hand, echoing a 300-year-old family tradition.',
-    details: 'Fired at high temperatures for durability. Natural earth color.',
+    location: 'Kashmir',
+    image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=1200',
+    price: '$285',
+    story: 'Hand-felted wool from the valleys of Kashmir, designed for timeless elegance and extreme warmth.',
+    details: '100% Pashmina Wool blend. Hand-finished seams.',
     video: 'https://cdn.pixabay.com/video/2021/08/11/84687-587425178_large.mp4',
+    category: 'Coat'
   },
   {
     id: '3',
-    title: 'Hand-carved Wooden Flute',
+    title: 'Amber Cotton Jamdani',
     artisan: 'Arif Khan',
-    location: 'Varanasi, Uttar Pradesh',
-    image: 'https://images.unsplash.com/photo-1549420556-9a5d13ba4e6b?q=80&w=2940&auto=format&fit=crop',
+    location: 'Phulia, West Bengal',
+    image: 'https://images.unsplash.com/photo-1583391733956-6c70868b95c0?w=1200',
     price: '$120',
-    story: 'Arif crafts each flute ensuring perfect tonal quality. He believes that the bamboo speaks before the musician even plays the first note.',
-    details: 'Seasoned bamboo, hand-tuned, natural vanish finish.',
-    video: 'https://cdn.pixabay.com/video/2020/05/26/40199-425890912_large.mp4'
+    story: 'Arif crafts each saree with air-thin muslin cotton. It takes 40 days of manual labor on a handloom to finish.',
+    details: '100% Hand-spun Muslin. Natural organic dyes.',
+    video: 'https://cdn.pixabay.com/video/2020/05/26/40199-425890912_large.mp4',
+    category: 'Saree'
+  },
+  {
+    id: '4',
+    title: 'Midnight Velvet Sherwani-Coat',
+    artisan: 'Samir Ali',
+    location: 'Lucknow',
+    image: 'https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=1200',
+    price: '$650',
+    story: 'A fusion of traditional Sherwani and modern overcoat, featuring Zardosi embroidery by the masters of Lucknow.',
+    details: 'Italian Velvet with Gold thread work.',
+    video: 'https://cdn.pixabay.com/video/2019/04/18/22818-331006509_large.mp4',
+    category: 'Coat'
   }
 ];
 
+const onboardingResponses = [];
+
 // Routes
+// 0. Store Onboarding Data
+app.post('/onboarding-feedback', (req, res) => {
+  const feedback = req.body;
+  console.log('Received Onboarding Feedback:', feedback);
+  onboardingResponses.push({
+    ...feedback,
+    timestamp: new Date()
+  });
+  res.status(201).json({ message: 'Feedback stored successfully', count: onboardingResponses.length });
+});
+
 // 1. Get all products
 app.get('/products', (req, res) => {
   res.json(products);
@@ -63,8 +91,6 @@ app.get('/product/:id', (req, res) => {
 // 3. Mock translation
 app.post('/translate', (req, res) => {
   const { text } = req.body;
-  // Mock translation logic: append the translated concept
-  // In a real app we'd use Google Translate API or similar
   const mockTranslations = {
     "hello": "নমস্কার (Namaskar)",
     "how much is this?": "এটার দাম কত? (Etar daam koto?)",
@@ -74,7 +100,6 @@ app.post('/translate', (req, res) => {
   const lowerText = text ? text.toLowerCase().trim() : '';
   const translated = mockTranslations[lowerText] || `Bengali translation of: "${text}"`;
 
-  // Added slight delay to simulate real network request for UI presentation
   setTimeout(() => {
     res.json({ original: text, translated });
   }, 800);

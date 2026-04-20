@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, StyleSheet, FlatList, Image, Pressable, Platform } from 'react-native';
+import { View, StyleSheet, FlatList, Image, Pressable, Platform, StatusBar } from 'react-native';
 import { Text } from '../../components/Themed';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS, SHADOW } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useAppStore } from '../../store/appStore';
 
 const MOCK_ORDERS = [
   {
@@ -29,16 +30,20 @@ const MOCK_ORDERS = [
 
 export default function OrdersScreen() {
   const router = useRouter();
+  const { isDark } = useAppStore();
 
   const renderOrder = ({ item, index }: { item: any, index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 100)} style={styles.orderCard}>
+    <Animated.View 
+      entering={FadeInDown.delay(index * 100)} 
+      style={[styles.orderCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#FFF' }]}
+    >
       <View style={styles.orderHeader}>
         <View>
-          <Text style={styles.orderId}>{item.id}</Text>
+          <Text style={[styles.orderId, { color: isDark ? '#FFF' : '#111' }]}>{item.id}</Text>
           <Text style={styles.orderDate}>{item.date}</Text>
         </View>
         <View style={[styles.statusBadge, item.status === 'Delivered' ? styles.statusDelivered : styles.statusTransit]}>
-          <Text style={styles.statusText}>{item.status.toUpperCase()}</Text>
+          <Text style={[styles.statusText, { color: isDark ? '#FFF' : '#111' }]}>{item.status.toUpperCase()}</Text>
         </View>
       </View>
       
@@ -46,27 +51,28 @@ export default function OrdersScreen() {
         <View key={i} style={styles.productRow}>
           <Image source={{ uri: prod.image }} style={styles.productImg} />
           <View style={styles.productInfo}>
-            <Text style={styles.productTitle}>{prod.title}</Text>
-            <Text style={styles.viewDetails}>View Details</Text>
+            <Text style={[styles.productTitle, { color: isDark ? '#FFF' : '#111' }]}>{prod.title}</Text>
+            <Text style={[styles.viewDetails, { color: isDark ? '#E8651A' : '#635BFF' }]}>View Details</Text>
           </View>
-          <Text style={styles.orderTotal}>₹{item.total.toLocaleString()}</Text>
+          <Text style={[styles.orderTotal, { color: isDark ? '#FFF' : '#111' }]}>₹{item.total.toLocaleString()}</Text>
         </View>
       ))}
 
-      <Pressable style={styles.trackBtn}>
-        <Text style={styles.trackText}>Track Shipment</Text>
-        <Ionicons name="arrow-forward" size={16} color="#FFF" />
+      <Pressable style={[styles.trackBtn, { backgroundColor: isDark ? '#FFF' : '#111' }]}>
+        <Text style={[styles.trackText, { color: isDark ? '#111' : '#FFF' }]}>Track Shipment</Text>
+        <Ionicons name="arrow-forward" size={16} color={isDark ? '#111' : '#FFF'} />
       </Pressable>
     </Animated.View>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#111" />
+    <View style={[styles.container, { backgroundColor: isDark ? '#0D0B0A' : '#F8F9FA' }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={[styles.header, { backgroundColor: isDark ? '#0D0B0A' : '#FFF', borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0', borderBottomWidth: 1 }]}>
+        <Pressable onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]}>
+          <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#111'} />
         </Pressable>
-        <Text style={styles.headerTitle}>Order History</Text>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#111' }]}>Order History</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -78,7 +84,7 @@ export default function OrdersScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="receipt-outline" size={60} color="#DDD" />
+            <Ionicons name="receipt-outline" size={60} color={isDark ? '#333' : '#DDD'} />
             <Text style={styles.emptyText}>No orders yet</Text>
           </View>
         }
@@ -116,6 +122,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
+    paddingTop: 30,
   },
   orderCard: {
     backgroundColor: '#FFF',
@@ -146,10 +153,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   statusDelivered: {
-    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+    backgroundColor: 'rgba(52, 199, 89, 0.15)',
   },
   statusTransit: {
-    backgroundColor: 'rgba(255, 159, 10, 0.1)',
+    backgroundColor: 'rgba(255, 159, 10, 0.15)',
   },
   statusText: {
     fontSize: 10,

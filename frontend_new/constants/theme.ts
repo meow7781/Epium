@@ -21,6 +21,14 @@ export const COLORS = {
   lightBorder: '#E8E0D5',
   lightMuted: '#9B9088',
 
+  // Pink theme
+  pinkBg: '#FFF0F5',
+  pinkCard: '#FFFFFF',
+  pinkCardAlt: '#FFD1DC',
+  pinkBorder: '#FFC0CB',
+  pinkMuted: '#DB7093',
+  pinkPrimary: '#FF69B4',
+
   // Text
   textWhite: '#FAF7F2',
   textBlack: '#0D0B0A',

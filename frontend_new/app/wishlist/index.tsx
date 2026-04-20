@@ -1,34 +1,39 @@
 import React from 'react';
-import { View, StyleSheet, FlatList, Image, Pressable, Platform, Dimensions } from 'react-native';
+import { View, StyleSheet, FlatList, Image, Pressable, Platform, Dimensions, StatusBar } from 'react-native';
 import { Text } from '../../components/Themed';
 import { COLORS, TYPOGRAPHY, SPACING, RADIUS, SHADOW } from '../../constants/theme';
 import { MOCK_PRODUCTS } from '../../constants/mockData';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useAppStore } from '../../store/appStore';
 
 const { width } = Dimensions.get('window');
 
 export default function WishlistScreen() {
   const router = useRouter();
+  const { isDark, wishlist, toggleWishlist } = useAppStore();
   
-  // Just show first 4 products as mock wishlist
-  const wishlistItems = MOCK_PRODUCTS.slice(0, 4);
+  // Dynamic wishlist from store
+  const wishlistItems = MOCK_PRODUCTS.filter(p => wishlist.includes(p.id));
 
   const renderItem = ({ item, index }: { item: any, index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 100)} style={styles.card}>
+    <Animated.View 
+      entering={FadeInDown.delay(index * 100)} 
+      style={[styles.card, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#FFF' }]}
+    >
       <Pressable onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.id } })}>
         <Image source={{ uri: item.images[0] }} style={styles.image} />
-        <Pressable style={styles.removeBtn}>
+        <Pressable style={[styles.removeBtn, { backgroundColor: isDark ? '#111' : '#FFF' }]}>
           <Ionicons name="heart" size={20} color="#FF453A" />
         </Pressable>
         <View style={styles.info}>
-          <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
-          <Text style={styles.location}>{item.location}</Text>
+          <Text style={[styles.title, { color: isDark ? '#FFF' : '#111' }]} numberOfLines={1}>{item.title}</Text>
+          <Text style={[styles.location, { color: isDark ? 'rgba(255,255,255,0.4)' : '#999' }]}>{item.location}</Text>
           <View style={styles.footer}>
-            <Text style={styles.price}>₹{item.price.toLocaleString()}</Text>
-            <Pressable style={styles.addBtn}>
-              <Ionicons name="cart-outline" size={18} color="#FFF" />
+            <Text style={[styles.price, { color: isDark ? '#FFF' : '#111' }]}>₹{item.price.toLocaleString()}</Text>
+            <Pressable style={[styles.addBtn, { backgroundColor: isDark ? '#FFF' : '#111' }]}>
+              <Ionicons name="cart-outline" size={18} color={isDark ? '#111' : '#FFF'} />
             </Pressable>
           </View>
         </View>
@@ -37,12 +42,13 @@ export default function WishlistScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#111" />
+    <View style={[styles.container, { backgroundColor: isDark ? '#0D0B0A' : '#F8F9FA' }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={[styles.header, { backgroundColor: isDark ? '#0D0B0A' : '#FFF', borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : '#F0F0F0', borderBottomWidth: 1 }]}>
+        <Pressable onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8F9FA' }]}>
+          <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#111'} />
         </Pressable>
-        <Text style={styles.headerTitle}>My Wishlist</Text>
+        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#111' }]}>My Wishlist</Text>
         <View style={{ width: 44 }} />
       </View>
 
@@ -88,6 +94,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 15,
+    paddingTop: 25,
   },
   columnWrapper: {
     justifyContent: 'space-between',

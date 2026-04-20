@@ -9,7 +9,7 @@ interface LoadingOverlayProps {
   message?: string;
 }
 
-export default function LoadingOverlay({ visible, message = 'Epium' }: LoadingOverlayProps) {
+export default function LoadingOverlay({ visible, message = 'EpiUm' }: LoadingOverlayProps) {
   if (!visible) return null;
 
   return (

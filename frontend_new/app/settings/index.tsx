@@ -10,11 +10,55 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { isDark, toggleTheme, user, logout } = useAppStore();
+  const { themeMode, setThemeMode, user, logout } = useAppStore();
+  const isDark = themeMode === 'dark';
+  const isPink = themeMode === 'pink';
+
+  const getBackgroundColor = () => {
+    if (isDark) return COLORS.darkBg;
+    if (isPink) return COLORS.pinkBg;
+    return '#F8F9FA';
+  };
+
+  const getCardColor = () => {
+    if (isDark) return COLORS.darkCard;
+    if (isPink) return COLORS.pinkCard;
+    return '#FFF';
+  };
+
+  const getTextColor = () => {
+    if (isDark) return '#FFF';
+    if (isPink) return COLORS.pinkMuted;
+    return '#111';
+  };
 
   const renderSectionHeader = (title: string) => (
     <Text style={styles.sectionTitle}>{title}</Text>
   );
+
+  const renderThemeOption = (mode: 'light' | 'dark' | 'pink', label: string, icon: any) => {
+    const isActive = themeMode === mode;
+    return (
+      <Pressable 
+        onPress={() => setThemeMode(mode)}
+        style={[
+          styles.themeOption,
+          isActive && { borderColor: COLORS.primary, backgroundColor: isDark ? 'rgba(232, 101, 26, 0.1)' : 'rgba(232, 101, 26, 0.05)' }
+        ]}
+      >
+        <View style={styles.itemLeft}>
+          <View style={[styles.iconContainer, { backgroundColor: isActive ? COLORS.primary : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)') }]}>
+            <Ionicons name={icon} size={18} color={isActive ? '#FFF' : (isDark ? '#FFF' : '#666')} />
+          </View>
+          <Text style={[styles.itemTitle, { color: getTextColor(), fontWeight: isActive ? '700' : '500' }]}>{label}</Text>
+        </View>
+        <View style={[styles.radioOuter, { borderColor: isActive ? COLORS.primary : (isDark ? '#444' : '#DDD') }]}>
+          {isActive && <View style={styles.radioInner} />}
+        </View>
+      </Pressable>
+    );
+  };
+
 
   const renderSettingItem = (icon: any, title: string, value?: string, onPress?: () => void, isLast = false) => (
     <Pressable 
@@ -27,9 +71,9 @@ export default function SettingsScreen() {
     >
       <View style={styles.itemLeft}>
         <View style={[styles.iconContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(232, 101, 26, 0.08)' }]}>
-          <Ionicons name={icon} size={20} color={isDark ? '#FFF' : COLORS.accent} />
+          <Ionicons name={icon} size={20} color={isDark ? '#FFF' : (isPink ? COLORS.pinkPrimary : COLORS.accent)} />
         </View>
-        <Text style={[styles.itemTitle, { color: isDark ? '#FFF' : '#111' }]}>{title}</Text>
+        <Text style={[styles.itemTitle, { color: getTextColor() }]}>{title}</Text>
       </View>
       <View style={styles.itemRight}>
         {value && <Text style={styles.itemValue}>{value}</Text>}
@@ -57,40 +101,35 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? COLORS.darkBg : '#F8F9FA' }]}>
+    <View style={[styles.container, { backgroundColor: getBackgroundColor() }]}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]}>
-          <Ionicons name="arrow-back" size={24} color={isDark ? '#FFF' : '#000'} />
+          <Ionicons name="arrow-back" size={24} color={getTextColor()} />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: isDark ? '#FFF' : '#111' }]}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: getTextColor() }]}>Settings</Text>
         <View style={{ width: 44 }} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <Animated.View entering={FadeInDown.delay(100)}>
+          {renderSectionHeader('Appearance')}
+          <View style={[styles.sectionCard, { backgroundColor: getCardColor() }]}>
+            {renderThemeOption('light', 'Light Mode', 'sunny-outline')}
+            {renderThemeOption('dark', 'Dark Mode', 'moon-outline')}
+            {renderThemeOption('pink', 'Pink Blossom', 'flower-outline')}
+          </View>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(150)}>
           {renderSectionHeader('Preference')}
-          <View style={[styles.sectionCard, { backgroundColor: isDark ? COLORS.darkCard : '#FFF' }]}>
-            <View style={styles.settingItem}>
-              <View style={styles.itemLeft}>
-                <View style={[styles.iconContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(232, 101, 26, 0.08)' }]}>
-                  <Ionicons name={isDark ? 'moon' : 'sunny'} size={20} color={isDark ? '#FFF' : COLORS.accent} />
-                </View>
-                <Text style={[styles.itemTitle, { color: isDark ? '#FFF' : '#111' }]}>Dark Aesthetic</Text>
-              </View>
-              <Switch 
-                value={isDark} 
-                onValueChange={toggleTheme}
-                trackColor={{ false: '#767577', true: '#34C759' }}
-                thumbColor={Platform.OS === 'ios' ? '#FFF' : isDark ? '#FFF' : '#f4f3f4'}
-              />
-            </View>
+          <View style={[styles.sectionCard, { backgroundColor: getCardColor() }]}>
             {renderSettingItem('notifications-outline', 'Notifications', 'Enabled', undefined, true)}
           </View>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.delay(200)}>
           {renderSectionHeader('Security')}
-          <View style={[styles.sectionCard, { backgroundColor: isDark ? COLORS.darkCard : '#FFF' }]}>
+          <View style={[styles.sectionCard, { backgroundColor: getCardColor() }]}>
             {renderSettingItem('lock-closed-outline', 'Security Key', 'Biometric', () => Alert.alert("Security", "FaceID is active for your vault."))}
             {renderSettingItem('shield-checkmark-outline', 'Payment Vault', 'Encrypted', undefined, true)}
           </View>
@@ -98,10 +137,10 @@ export default function SettingsScreen() {
 
         <Animated.View entering={FadeInDown.delay(300)}>
           {renderSectionHeader('Support')}
-          <View style={[styles.sectionCard, { backgroundColor: isDark ? COLORS.darkCard : '#FFF' }]}>
+          <View style={[styles.sectionCard, { backgroundColor: getCardColor() }]}>
             {renderSettingItem('help-circle-outline', 'Help Center')}
             {renderSettingItem('document-text-outline', 'Legal Policy')}
-            {renderSettingItem('star-outline', 'Rate Epium', '', undefined, true)}
+            {renderSettingItem('star-outline', 'Rate EpiUm', '', undefined, true)}
           </View>
         </Animated.View>
 
@@ -110,9 +149,9 @@ export default function SettingsScreen() {
             style={({ pressed }) => [styles.logoutBtn, pressed && { opacity: 0.8 }]}
             onPress={handleLogout}
           >
-            <Text style={styles.logoutText}>Log Out from Epium</Text>
+            <Text style={styles.logoutText}>Log Out from EpiUm</Text>
           </Pressable>
-          <Text style={styles.versionText}>Epium Premium v1.0.4-beta</Text>
+          <Text style={styles.versionText}>EpiUm Premium v1.0.4-beta</Text>
         </Animated.View>
       </ScrollView>
     </View>
@@ -168,6 +207,30 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.03)',
+  },
+  themeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.primary,
   },
   itemPressed: {
     backgroundColor: 'rgba(255,255,255,0.02)',
