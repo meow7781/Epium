@@ -152,6 +152,14 @@ export default function LandingPage() {
             <Text style={styles.shopBtnText}>ENTER THE STORE</Text>
             <Ionicons name="arrow-forward" size={18} color="#000" style={{ marginLeft: 10 }} />
           </Pressable>
+          
+          <Pressable 
+            style={({ pressed }) => [styles.scannerBtn, pressed && { opacity: 0.8 }]}
+            onPress={() => router.push('/scan')}
+          >
+            <Ionicons name="qr-code" size={20} color="#FFF" style={{ marginRight: 8 }} />
+            <Text style={styles.scannerBtnText}>SCAN QR CODE</Text>
+          </Pressable>
         </Animated.View>
       </View>
     </View>
@@ -239,5 +247,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 2,
+  },
+  scannerBtn: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    height: 56,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 2,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  scannerBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 });
