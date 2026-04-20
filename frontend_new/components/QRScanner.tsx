@@ -12,15 +12,19 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
   const [scanned, setScanned] = useState(false);
 
   useEffect(() => {
-    if (!permission) {
-      requestPermission();
-    }
-  }, [permission]);
+    (async () => {
+      if (!permission?.granted) {
+        const result = await requestPermission();
+      }
+    })();
+  }, []);
 
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = (result: any) => {
+    if (scanned) return;
     setScanned(true);
-    onScan(data);
-    Alert.alert('QR Code Scanned', `Data: ${data}`, [
+    const scannedData = result.data || result;
+    onScan(scannedData);
+    Alert.alert('QR Code Scanned', `Data: ${scannedData}`, [
       { text: 'OK', onPress: () => setScanned(false) },
     ]);
   };
@@ -28,7 +32,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
   if (!permission) {
     return (
       <View style={styles.container}>
-        <Text>Requesting camera permission...</Text>
+        <Text style={styles.message}>Requesting camera permission...</Text>
       </View>
     );
   }
@@ -37,7 +41,7 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
     return (
       <View style={styles.container}>
         <Text style={styles.message}>We need your permission to access the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
+        <Button onPress={requestPermission} title="Grant Permission" />
       </View>
     );
   }
@@ -45,22 +49,22 @@ export default function QRScanner({ onScan, onClose }: QRScannerProps) {
   return (
     <View style={styles.container}>
       <CameraView
-        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-        barcodeScannerSettings={{
-          barcodeTypes: ['qr'],
-        }}
         style={styles.camera}
+        facing="back"
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       >
         <View style={styles.overlay}>
           <View style={styles.scanBox} />
           <Text style={styles.instruction}>Align QR code in the box to scan</Text>
         </View>
       </CameraView>
-      <Button
-        title="Close Scanner"
-        onPress={onClose}
-        color="#FF6B6B"
-      />
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Close Scanner"
+          onPress={onClose}
+          color="#FF6B6B"
+        />
+      </View>
     </View>
   );
 }
@@ -76,6 +80,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingBottom: 10,
     color: '#fff',
+    fontSize: 16,
   },
   camera: {
     flex: 1,
@@ -103,5 +108,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 5,
+  },
+  buttonContainer: {
+    paddingBottom: 20,
+    paddingHorizontal: 20,
   },
 });
