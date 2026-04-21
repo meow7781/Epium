@@ -71,7 +71,18 @@ export default function ProductDetailScreen() {
           </Pressable>
           
           {/* AR & 360 Overlay Button */}
-          <Pressable style={styles.arOverlayBtn}>
+          <Pressable 
+            style={styles.arOverlayBtn}
+            onPress={() => router.push({
+              pathname: '/ar-view',
+              params: { 
+                productTitle: product.title,
+                productImage: product.images[0],
+                productPrice: product.price,
+                productSource: 'ARTISAN'
+              }
+            })}
+          >
             <LinearGradient
               colors={['rgba(232, 101, 26, 0.9)', 'rgba(255, 69, 58, 0.9)']}
               style={styles.arGradient}

@@ -118,6 +118,7 @@ function RootLayoutNav() {
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="admin/index" options={{ presentation: 'card' }} />
         <Stack.Screen name="product/[id]" options={{ presentation: 'card' }} />
+        <Stack.Screen name="ar-view" options={{ presentation: 'fullScreenModal', animationEnabled: true }} />
       </Stack>
       <LoadingOverlay visible={!isAppReady} />
     </ThemeProvider>
